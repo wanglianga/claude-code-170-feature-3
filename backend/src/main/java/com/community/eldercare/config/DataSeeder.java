@@ -23,14 +23,27 @@ public class DataSeeder implements CommandLineRunner {
     private final ElderRepository elderRepo;
     private final EmergencyContactRepository contactRepo;
     private final NeighborResponderRepository neighborRepo;
+    private final HelpEventRepository eventRepo;
+    private final OnsiteVisitRepository onsiteRepo;
+    private final FamilyCommunicationRepository commRepo;
+    private final EventLogRepository logRepo;
+    private final EventFollowUpRepository followUpRepo;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public DataSeeder(UserRepository userRepo, ElderRepository elderRepo,
-                      EmergencyContactRepository contactRepo, NeighborResponderRepository neighborRepo) {
+                      EmergencyContactRepository contactRepo, NeighborResponderRepository neighborRepo,
+                      HelpEventRepository eventRepo, OnsiteVisitRepository onsiteRepo,
+                      FamilyCommunicationRepository commRepo, EventLogRepository logRepo,
+                      EventFollowUpRepository followUpRepo) {
         this.userRepo = userRepo;
         this.elderRepo = elderRepo;
         this.contactRepo = contactRepo;
         this.neighborRepo = neighborRepo;
+        this.eventRepo = eventRepo;
+        this.onsiteRepo = onsiteRepo;
+        this.commRepo = commRepo;
+        this.logRepo = logRepo;
+        this.followUpRepo = followUpRepo;
     }
 
     @Override
@@ -151,8 +164,132 @@ public class DataSeeder implements CommandLineRunner {
             addContact(e3, "郑伟", "侄子", "13700000041", true, true);
             addNeighbor(e3, "陈姐", "13600000042", "同栋 201", 70);
 
+            seedFrequentNightCase(e3);
+
             log.info("种子老人档案已创建：周桂兰、吴德海、郑秀珍");
         }
+    }
+
+    /**
+     * 为郑秀珍构造近一周 3 次夜间求助的完整处置留痕：
+     * 每次的求助原因（语音/研判）、到场结果、孤独焦虑、药物管理混乱、家属参与（多次未接通）。
+     * 第 3 次自动等价触发“频繁夜间求助”，供社区端观察并发起长期照护评估。
+     */
+    private void seedFrequentNightCase(Elder e) {
+        EmergencyContact nephew = contactRepo.findByElderId(e.getId()).stream()
+                .filter(c -> "郑伟".equals(c.getName())).findFirst().orElse(null);
+        LocalDateTime now = LocalDateTime.now();
+
+        seedNightEvent(e, "E260930001", now.minusDays(6).withHour(23).withMinute(12).withSecond(0).withNano(0),
+                "PHONE", "夜里睡不着，心里发慌，想找人说说话", "EMOTIONAL_CRISIS", "HIGH", "",
+                "钥匙开门", "情绪激动", true, "老伴去世后长期独处，夜间反复主诉心慌、害怕",
+                false, null, false, "STABLE", nephew);
+        seedNightEvent(e, "E261002002", now.minusDays(4).withHour(0).withMinute(43).withSecond(0).withNano(0),
+                "SMART_BUTTON", "头晕起夜，找不到降压药，按钮求助", "BODY_DISCOMFORT", "HIGH", "",
+                "智能锁授权", "身体不适", false, null,
+                true, "药盒中早/晚药混放，存在漏服、重复服药，无人整理药盒", false, "STABLE", nephew);
+        seedNightEvent(e, "E261004003", now.minusDays(2).withHour(2).withMinute(18).withSecond(0).withNano(0),
+                "SMART_BUTTON", "胸口闷，晚饭药没吃，一直没人接电话", "BODY_DISCOMFORT", "CRITICAL",
+                "FREQUENT_NIGHT_HELP", "智能锁授权", "身体不适", true, "情绪低落、焦虑，反复念叨没人管",
+                true, "晚间降压药漏服，药盒提醒缺失", true, "STABLE", nephew);
+        log.info("种子夜间频繁求助案例已创建（郑秀珍，近一周 3 次夜间事件）");
+    }
+
+    private void seedNightEvent(Elder elder, String no, LocalDateTime at, String source, String voice,
+                                String triage, String severity, String flags, String entryMethod,
+                                String elderStatus, boolean lonely, String emotionNote,
+                                boolean medChaotic, String medNote, boolean thirdEventFamilyReached,
+                                String followResult, EmergencyContact primaryContact) {
+        HelpEvent ev = new HelpEvent();
+        ev.setEventNo(no);
+        ev.setElder(elder);
+        ev.setStatus("CLOSED");
+        ev.setSource(source);
+        ev.setVoiceContent(voice);
+        ev.setNightHelp(true);
+        ev.setRiskFlags(flags);
+        ev.setTriageType(triage);
+        ev.setSeverity(severity);
+        ev.setTriageWorkerName("李社工");
+        ev.setTriagedAt(at.plusMinutes(3));
+        LocalDateTime arrived = at.plusMinutes(9);
+        ev.setDispatchedAt(at.plusMinutes(4));
+        ev.setArrivedAt(arrived);
+        ev.setResponseMinutes(9);
+        ev.setFollowUpResult(followResult);
+        ev.setFollowedUpAt(at.plusHours(20));
+        ev.setClosedAt(at.plusHours(20));
+        ev.setProfileUpdated(true);
+        ev.setCreatedAt(at);
+        eventRepo.save(ev);
+
+        OnsiteVisit v = new OnsiteVisit();
+        v.setEvent(ev);
+        v.setEntryMethod(entryMethod);
+        v.setEntered(true);
+        v.setElderStatus(elderStatus);
+        v.setFamilyContacted(true);
+        v.setLonelyAnxious(lonely);
+        v.setEmotionNote(emotionNote);
+        v.setMedicationChaotic(medChaotic);
+        v.setMedicationNote(medNote);
+        v.setVisitorName("赵网格员");
+        v.setArrivedAt(arrived);
+        onsiteRepo.save(v);
+
+        // 家属参与：侄子前两次未接通；第三次经多次拨打后接通，态度一般
+        addSeedComm(ev, primaryContact, at.plusMinutes(6), false, null);
+        addSeedComm(ev, primaryContact, at.plusMinutes(12), thirdEventFamilyReached,
+                thirdEventFamilyReached ? "一般" : null);
+
+        EventFollowUp f = new EventFollowUp();
+        f.setEvent(ev);
+        f.setResult(followResult);
+        f.setMethod("电话回访");
+        f.setSatisfaction(4);
+        f.setNextCareType("DAILY_VISIT");
+        f.setNextCareAt(at.plusDays(3));
+        f.setOperatorName("李社工");
+        f.setFollowedUpAt(at.plusHours(20));
+        followUpRepo.save(f);
+
+        seedLog(ev, "HELP", "夜间收到求助（" + at.toLocalDate() + " " + at.toLocalTime() + "），语音内容：" + voice, "系统", at.plusMinutes(1));
+        seedLog(ev, "ONSITE", "上门核实：" + elderStatus
+                + (lonely ? "，表现孤独焦虑" : "") + (medChaotic ? "，药物管理混乱" : ""), "赵网格员", arrived);
+        seedLog(ev, "FAMILY_COMM",
+                thirdEventFamilyReached ? "家属经多次拨打后接通，态度一般" : "连续 2 次拨打家属未接通",
+                "李社工", at.plusMinutes(15));
+        seedLog(ev, "CLOSE", "事件回访归档：" + followResult, "李社工", at.plusHours(20));
+    }
+
+    private void addSeedComm(HelpEvent ev, EmergencyContact contact, LocalDateTime at, boolean reached, String attitude) {
+        FamilyCommunication c = new FamilyCommunication();
+        c.setEvent(ev);
+        c.setContact(contact);
+        c.setContactName(contact == null ? "家属" : contact.getName());
+        c.setContactPhone(contact == null ? null : contact.getPhone());
+        c.setChannel("电话");
+        c.setReached(reached);
+        c.setAttitude(attitude);
+        c.setOperatorName("李社工");
+        c.setCommunicatedAt(at);
+        commRepo.save(c);
+        if (contact != null) {
+            contact.setContactAttempts(contact.getContactAttempts() + 1);
+            if (reached) contact.setContactReached(contact.getContactReached() + 1);
+            contact.setReachabilityNote("近一周 6 次联系中仅 1 次接通，多为夜间求助时未接");
+            contactRepo.save(contact);
+        }
+    }
+
+    private void seedLog(HelpEvent ev, String type, String content, String operator, LocalDateTime at) {
+        EventLog l = new EventLog();
+        l.setEvent(ev);
+        l.setType(type);
+        l.setContent(content);
+        l.setOperatorName(operator);
+        l.setCreatedAt(at);
+        logRepo.save(l);
     }
 
     private void createUser(String username, String pwd, String name, String role, String phone) {

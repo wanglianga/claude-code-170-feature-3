@@ -220,6 +220,10 @@ public class EventService {
         v.setTemporaryCareNeeded(req.isTemporaryCareNeeded());
         v.setFollowServiceSuggestions(req.getFollowServiceSuggestions());
         v.setSafetyHazards(req.getSafetyHazards());
+        v.setLonelyAnxious(req.isLonelyAnxious());
+        v.setEmotionNote(req.getEmotionNote());
+        v.setMedicationChaotic(req.isMedicationChaotic());
+        v.setMedicationNote(req.getMedicationNote());
         v.setNote(req.getNote());
         v.setVisitorName(UserContext.currentName());
         LocalDateTime now = LocalDateTime.now();
@@ -252,7 +256,11 @@ public class EventService {
                 + (req.isRefuseMedical() ? "，老人拒绝就医" : "")
                 + (req.isTemporaryCareNeeded() ? "，需临时照护" : "")
                 + (req.getSafetyHazards() != null && !req.getSafetyHazards().isBlank()
-                ? "，发现家中安全隐患：" + req.getSafetyHazards() : ""),
+                ? "，发现家中安全隐患：" + req.getSafetyHazards() : "")
+                + (req.isLonelyAnxious() ? "，老人表现孤独焦虑"
+                + (req.getEmotionNote() != null && !req.getEmotionNote().isBlank() ? "（" + req.getEmotionNote() + "）" : "") : "")
+                + (req.isMedicationChaotic() ? "，药物管理混乱"
+                + (req.getMedicationNote() != null && !req.getMedicationNote().isBlank() ? "（" + req.getMedicationNote() + "）" : "") : ""),
                 UserContext.currentName());
         broadcast("event-update", eventId);
         return v;

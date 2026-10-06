@@ -98,3 +98,102 @@ export const RISK_LEVEL_TAG = {
 export const ENTRY_METHODS = ['钥匙开门', '门禁密码', '智能锁授权', '邻居协助开门', '家属到场开门', '破锁入户', '未能入户']
 
 export const ELDER_STATUS_OPTIONS = ['清醒正常', '身体不适', '已跌倒', '意识不清', '情绪激动', '未见到老人']
+
+/* ============ 长期照护 ============ */
+
+export const CARE_ITEM_LABEL = {
+  REGULAR_VISIT: '定期探访',
+  PSYCH_COMPANION: '心理陪伴',
+  MEAL_SERVICE: '助餐',
+  FAMILY_DOCTOR: '家庭医生随访',
+  MED_REMINDER: '药盒提醒',
+  FAMILY_REACH: '家属联系',
+  OTHER: '其他'
+}
+
+export const CARE_ITEM_TAG = {
+  REGULAR_VISIT: 'danger',
+  PSYCH_COMPANION: 'success',
+  MEAL_SERVICE: 'warning',
+  FAMILY_DOCTOR: 'primary',
+  MED_REMINDER: 'info',
+  FAMILY_REACH: '',
+  OTHER: 'info'
+}
+
+export const PLAN_STATUS_LABEL = {
+  DRAFT: '草案待生效',
+  ACTIVE: '生效观察中',
+  COMPLETED: '观察期结束',
+  TERMINATED: '已终止'
+}
+
+export const PLAN_STATUS_TAG = {
+  DRAFT: 'info',
+  ACTIVE: 'danger',
+  COMPLETED: 'success',
+  TERMINATED: 'warning'
+}
+
+export const CARE_LEVEL_LABEL = {
+  LIGHT: '轻度关怀',
+  MEDIUM: '重点照护',
+  INTENSIVE: '强化照护'
+}
+
+export const FAMILY_INVOLVEMENT_LABEL = {
+  GOOD: '参与良好',
+  AVERAGE: '参与一般',
+  POOR: '参与不足'
+}
+
+export const FAMILY_INVOLVEMENT_TAG = {
+  GOOD: 'success',
+  AVERAGE: 'warning',
+  POOR: 'danger'
+}
+
+export const VERDICT_LABEL = {
+  OBSERVING: '观察数据积累中',
+  IMPROVING: '改善中',
+  NO_CHANGE: '无明显变化',
+  WORSENING: '未见改善且恶化'
+}
+
+export const VERDICT_TAG = {
+  OBSERVING: 'info',
+  IMPROVING: 'success',
+  NO_CHANGE: 'warning',
+  WORSENING: 'danger'
+}
+
+export const CONFERENCE_ROLE_LABEL = {
+  SOCIAL_WORKER: '社工',
+  ELDER_ADVISOR: '养老顾问',
+  COMMUNITY_DOCTOR: '社区医生',
+  FAMILY: '家属',
+  GRID_WORKER: '网格员',
+  OTHER: '其他'
+}
+
+export const ARCHIVE_TYPE_LABEL = {
+  ASSESSMENT: '长期照护评估',
+  CARE_PLAN: '照护方案',
+  CONFERENCE: '个案会商',
+  REVIEW: '效果观察',
+  MANUAL: '社工记录'
+}
+
+export const ARCHIVE_TYPE_TAG = {
+  ASSESSMENT: 'warning',
+  CARE_PLAN: 'danger',
+  CONFERENCE: 'primary',
+  REVIEW: 'success',
+  MANUAL: 'info'
+}
+
+export const ACTIVITY_RECORD_LABEL = {
+  REGISTER: '签到/完成',
+  CALL_PHONE: '电话关怀',
+  MISSED: '未签到/失约'
+}

@@ -4,6 +4,7 @@ import com.community.eldercare.common.R;
 import com.community.eldercare.domain.Elder;
 import com.community.eldercare.domain.EmergencyContact;
 import com.community.eldercare.domain.NeighborResponder;
+import com.community.eldercare.repo.ElderArchiveNoteRepository;
 import com.community.eldercare.repo.ElderRepository;
 import com.community.eldercare.service.ElderService;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +18,13 @@ public class ElderController {
 
     private final ElderService elderService;
     private final ElderRepository elderRepo;
+    private final ElderArchiveNoteRepository archiveNoteRepo;
 
-    public ElderController(ElderService elderService, ElderRepository elderRepo) {
+    public ElderController(ElderService elderService, ElderRepository elderRepo,
+                           ElderArchiveNoteRepository archiveNoteRepo) {
         this.elderService = elderService;
         this.elderRepo = elderRepo;
+        this.archiveNoteRepo = archiveNoteRepo;
     }
 
     @GetMapping
@@ -42,7 +46,8 @@ public class ElderController {
         return R.ok(Map.of(
                 "elder", e,
                 "contacts", elderService.contacts(id),
-                "neighbors", elderService.neighbors(id)
+                "neighbors", elderService.neighbors(id),
+                "archiveNotes", archiveNoteRepo.findByElderIdOrderByCreatedAtDesc(id)
         ));
     }
 

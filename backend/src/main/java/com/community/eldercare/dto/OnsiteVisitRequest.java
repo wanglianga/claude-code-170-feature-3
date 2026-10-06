@@ -19,6 +19,12 @@ public class OnsiteVisitRequest {
     private boolean temporaryCareNeeded;
     private String followServiceSuggestions;
     private String safetyHazards;
+    /** 是否孤独焦虑、情绪表现说明 */
+    private boolean lonelyAnxious;
+    private String emotionNote;
+    /** 是否药物管理混乱、用药情况说明 */
+    private boolean medicationChaotic;
+    private String medicationNote;
     private String note;
 
     public String getEntryMethod() { return entryMethod; }
@@ -41,6 +47,14 @@ public class OnsiteVisitRequest {
     public void setFollowServiceSuggestions(String followServiceSuggestions) { this.followServiceSuggestions = followServiceSuggestions; }
     public String getSafetyHazards() { return safetyHazards; }
     public void setSafetyHazards(String safetyHazards) { this.safetyHazards = safetyHazards; }
+    public boolean isLonelyAnxious() { return lonelyAnxious; }
+    public void setLonelyAnxious(boolean lonelyAnxious) { this.lonelyAnxious = lonelyAnxious; }
+    public String getEmotionNote() { return emotionNote; }
+    public void setEmotionNote(String emotionNote) { this.emotionNote = emotionNote; }
+    public boolean isMedicationChaotic() { return medicationChaotic; }
+    public void setMedicationChaotic(boolean medicationChaotic) { this.medicationChaotic = medicationChaotic; }
+    public String getMedicationNote() { return medicationNote; }
+    public void setMedicationNote(String medicationNote) { this.medicationNote = medicationNote; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
 }

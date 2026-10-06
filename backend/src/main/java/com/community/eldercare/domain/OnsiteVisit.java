@@ -52,6 +52,16 @@ public class OnsiteVisit {
     @Column(length = 2000)
     private String safetyHazards;
 
+    /** 上门时老人是否表现出孤独、焦虑等情绪问题（长期照护评估依据） */
+    private boolean lonelyAnxious;
+    @Column(length = 1000)
+    private String emotionNote;
+
+    /** 是否发现药物管理混乱（漏服/重复服/错服/药盒无人整理等，长期照护评估依据） */
+    private boolean medicationChaotic;
+    @Column(length = 1000)
+    private String medicationNote;
+
     private String visitorName;
     private LocalDateTime arrivedAt = LocalDateTime.now();
 

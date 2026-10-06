@@ -120,7 +120,11 @@
                 <el-tag v-if="v.hospitalNeeded" type="danger" size="small">需送医</el-tag>
                 <el-tag v-if="v.refuseMedical" type="danger" size="small" effect="plain">拒绝就医</el-tag>
                 <el-tag v-if="v.temporaryCareNeeded" type="warning" size="small">需临时照护</el-tag>
+                <el-tag v-if="v.lonelyAnxious" type="success" size="small">孤独焦虑</el-tag>
+                <el-tag v-if="v.medicationChaotic" type="info" size="small">药物管理混乱</el-tag>
               </el-descriptions-item>
+              <el-descriptions-item v-if="v.emotionNote" label="情绪表现" :span="2">{{ v.emotionNote }}</el-descriptions-item>
+              <el-descriptions-item v-if="v.medicationNote" label="用药情况" :span="2">{{ v.medicationNote }}</el-descriptions-item>
               <el-descriptions-item label="后续服务建议" :span="2">{{ v.followServiceSuggestions || '—' }}</el-descriptions-item>
               <el-descriptions-item label="家中安全隐患" :span="2">
                 <span :style="{ color: v.safetyHazards ? '#f56c6c' : '' }">{{ v.safetyHazards || '无' }}</span>
@@ -370,7 +374,15 @@
           <el-col :span="12"><el-form-item label="需要送医"><el-switch v-model="onsite.hospitalNeeded" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="拒绝就医"><el-switch v-model="onsite.refuseMedical" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="临时照护"><el-switch v-model="onsite.temporaryCareNeeded" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="孤独焦虑"><el-switch v-model="onsite.lonelyAnxious" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="药物管理混乱"><el-switch v-model="onsite.medicationChaotic" /></el-form-item></el-col>
         </el-row>
+        <el-form-item v-if="onsite.lonelyAnxious" label="情绪表现">
+          <el-input v-model="onsite.emotionNote" placeholder="如：反复主诉心慌害怕、情绪低落、拒谈家人等" />
+        </el-form-item>
+        <el-form-item v-if="onsite.medicationChaotic" label="用药情况">
+          <el-input v-model="onsite.medicationNote" placeholder="如：药盒早晚药混放、漏服/重复服药、无人整理药盒" />
+        </el-form-item>
         <el-form-item label="后续服务建议">
           <el-checkbox-group v-model="onsite.suggestions">
             <el-checkbox value="日常巡访">日常巡访</el-checkbox>
@@ -603,7 +615,8 @@ function openOnsite() {
     entryMethod: d.value.elder?.doorAccessInfo ? '智能锁授权' : '钥匙开门',
     entered: true, photoUrls: '', elderStatus: '清醒正常',
     familyContacted: false, hospitalNeeded: false, refuseMedical: false,
-    temporaryCareNeeded: false, suggestions: [], safetyHazards: '', note: ''
+    temporaryCareNeeded: false, lonelyAnxious: false, emotionNote: '',
+    medicationChaotic: false, medicationNote: '', suggestions: [], safetyHazards: '', note: ''
   })
   onsiteDialog.value = true
 }

@@ -11,6 +11,8 @@ const routes = [
       { path: 'events/:id', component: () => import('../views/EventDetailView.vue'), meta: { title: '事件处置' } },
       { path: 'elders', component: () => import('../views/ElderListView.vue'), meta: { title: '老人档案' } },
       { path: 'elders/:id', component: () => import('../views/ElderDetailView.vue'), meta: { title: '老人画像' } },
+      { path: 'care-plans', component: () => import('../views/CarePlanListView.vue'), meta: { title: '长期照护方案' } },
+      { path: 'care-plans/:id', component: () => import('../views/CarePlanDetailView.vue'), meta: { title: '照护方案跟踪' } },
       { path: 'stats', component: () => import('../views/StatsView.vue'), meta: { title: '照护复盘' } }
     ]
   }
