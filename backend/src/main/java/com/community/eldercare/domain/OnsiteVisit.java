@@ -36,6 +36,32 @@ public class OnsiteVisit {
     @Column(nullable = false)
     private String elderStatus;
 
+    /** 本次求助原因（现场核实），逗号分隔：孤独焦虑/身体不适/跌倒/用药问题/生活协助/设备误触/其他 */
+    @Column(length = 500)
+    private String helpReason;
+
+    /** 到场结果：SCENE_RESOLVED 现场解决 / CALMED 安抚后平稳 / TO_HOSPITAL 送医处置 /
+     *  TEMP_CARE 安排临时照护 / FORWARD_SERVICE 转长期服务 / NO_ENTRY 未能入户 */
+    private String arriveResult;
+
+    /** 是否存在孤独焦虑表现 */
+    private boolean lonelyAnxious;
+    /** 孤独/焦虑表现描述（反复按键求陪伴、情绪低落、睡眠差等） */
+    @Column(length = 1000)
+    private String anxietyNote;
+
+    /** 是否存在药物管理混乱（漏服、重复服、药盒混乱、过期药等） */
+    private boolean medicationChaos;
+    /** 药物管理情况描述 */
+    @Column(length = 1000)
+    private String medicationNote;
+
+    /** 本次家属是否参与（到场/通话共同处置） */
+    private boolean familyInvolved;
+    /** 家属参与情况说明 */
+    @Column(length = 1000)
+    private String familyInvolvementNote;
+
     /** 是否联系家属 */
     private boolean familyContacted;
     /** 是否需要送医 */

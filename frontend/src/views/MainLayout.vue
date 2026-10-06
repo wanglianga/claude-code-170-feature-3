@@ -13,6 +13,9 @@
         <el-menu-item index="/elders">
           <el-icon><User /></el-icon><span>老人档案画像</span>
         </el-menu-item>
+        <el-menu-item index="/care-plans">
+          <el-icon><Sunny /></el-icon><span>长期照护跟踪</span>
+        </el-menu-item>
         <el-menu-item index="/stats">
           <el-icon><DataAnalysis /></el-icon><span>照护能力复盘</span>
         </el-menu-item>

@@ -23,14 +23,22 @@ public class DataSeeder implements CommandLineRunner {
     private final ElderRepository elderRepo;
     private final EmergencyContactRepository contactRepo;
     private final NeighborResponderRepository neighborRepo;
+    private final HelpEventRepository eventRepo;
+    private final OnsiteVisitRepository onsiteRepo;
+    private final FamilyCommunicationRepository commRepo;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public DataSeeder(UserRepository userRepo, ElderRepository elderRepo,
-                      EmergencyContactRepository contactRepo, NeighborResponderRepository neighborRepo) {
+                      EmergencyContactRepository contactRepo, NeighborResponderRepository neighborRepo,
+                      HelpEventRepository eventRepo, OnsiteVisitRepository onsiteRepo,
+                      FamilyCommunicationRepository commRepo) {
         this.userRepo = userRepo;
         this.elderRepo = elderRepo;
         this.contactRepo = contactRepo;
         this.neighborRepo = neighborRepo;
+        this.eventRepo = eventRepo;
+        this.onsiteRepo = onsiteRepo;
+        this.commRepo = commRepo;
     }
 
     @Override
@@ -151,7 +159,24 @@ public class DataSeeder implements CommandLineRunner {
             addContact(e3, "郑伟", "侄子", "13700000041", true, true);
             addNeighbor(e3, "陈姐", "13600000042", "同栋 201", 70);
 
-            log.info("种子老人档案已创建：周桂兰、吴德海、郑秀珍");
+            // 郑秀珍近一周已有 3 次夜间求助：孤独焦虑为主，伴药物管理混乱、家属参与不足
+            seedNightEvent(e3, 6, 23, 12, "EMOTIONAL_CRISIS", "HIGH",
+                    "睡不着、一个人害怕，想有人来说说话",
+                    new String[]{"孤独焦虑", "夜间恐惧"}, "CALMED",
+                    true, "反复按键求陪伴，情绪低落", false, null,
+                    false, "侄子电话未接通", false, false);
+            seedNightEvent(e3, 4, 2, 36, "LIFE_ASSIST", "MEDIUM",
+                    "起夜后找不到降压药，不知道吃没吃",
+                    new String[]{"孤独焦虑", "用药问题"}, "SCENE_RESOLVED",
+                    true, "夜间恐惧、表达孤独", true, "早晚药混放，重复服药一次",
+                    false, "两次拨打侄子均未接", false, false);
+            seedNightEvent(e3, 1, 22, 58, "EMOTIONAL_CRISIS", "HIGH",
+                    "胸口闷、害怕，按了按钮后好一些",
+                    new String[]{"孤独焦虑", "身体不适"}, "CALMED",
+                    true, "见到社工后情绪平复，承认主要是孤单", true, "漏服晚间降压药",
+                    true, "侄子接通后电话共同安抚，未到场", true, true);
+
+            log.info("种子老人档案已创建：周桂兰、吴德海、郑秀珍（含郑秀珍近一周3次夜间求助）");
         }
     }
 
@@ -187,5 +212,77 @@ public class DataSeeder implements CommandLineRunner {
         n.setProximity(proximity);
         n.setReliabilityScore(score);
         neighborRepo.save(n);
+    }
+
+    /**
+     * 构造一条已归档的夜间求助种子事件（含上门核实新维度与家属沟通），
+     * 让“一周内多次夜间求助”在全新启动时即可演示。
+     */
+    private void seedNightEvent(Elder elder, int daysAgo, int hour, int minute,
+                                String triageType, String severity, String voice,
+                                String[] reasons, String arriveResult,
+                                boolean lonely, String anxietyNote,
+                                boolean medChaos, String medNote,
+                                boolean familyInvolved, String familyNote,
+                                boolean familyReached, boolean familyContacted) {
+        java.time.LocalDateTime at = java.time.LocalDate.now().minusDays(daysAgo).atTime(hour, minute);
+        HelpEvent e = new HelpEvent();
+        String datePart = String.format("%tY%<tm%<td", at).substring(2);
+        e.setEventNo(String.format("E%s-S%02d", datePart, (int) (eventRepo.count() + 1)));
+        e.setElder(elder);
+        e.setSource("SMART_BUTTON");
+        e.setSourceDetail("SOS-DEVICE-003");
+        e.setVoiceContent(voice);
+        e.setNightHelp(true);
+        e.setStatus("CLOSED");
+        e.setTriageType(triageType);
+        e.setSeverity(severity);
+        e.setTriageNote("种子事件：值班研判");
+        e.setTriageWorkerName("李社工");
+        e.setTriagedAt(at.plusMinutes(3));
+        e.setArrivedAt(at.plusMinutes(12));
+        e.setResponseMinutes(12);
+        e.setFollowUpResult("STABLE");
+        e.setFollowedUpAt(at.plusHours(2));
+        e.setClosedAt(at.plusHours(2));
+        e.setProfileUpdated(false);
+        StringBuilder flags = new StringBuilder("FAMILY_UNREACHABLE");
+        if (eventRepo.findNightHelpsSince(elder.getId(), at.minusDays(30)).size() + 1 >= 3) {
+            flags.append(",FREQUENT_NIGHT_HELP");
+        }
+        e.setRiskFlags(flags.toString());
+        e.setCreatedAt(at);
+        eventRepo.save(e);
+
+        OnsiteVisit v = new OnsiteVisit();
+        v.setEvent(e);
+        v.setEntryMethod("智能锁授权");
+        v.setEntered(true);
+        v.setElderStatus(lonely ? "情绪激动" : "清醒正常");
+        v.setHelpReason(String.join(",", reasons));
+        v.setArriveResult(arriveResult);
+        v.setLonelyAnxious(lonely);
+        v.setAnxietyNote(anxietyNote);
+        v.setMedicationChaos(medChaos);
+        v.setMedicationNote(medNote);
+        v.setFamilyInvolved(familyInvolved);
+        v.setFamilyInvolvementNote(familyNote);
+        v.setFamilyContacted(familyContacted);
+        v.setFollowServiceSuggestions("日常巡访,心理陪伴,助餐");
+        v.setVisitorName("赵网格员");
+        v.setArrivedAt(at.plusMinutes(12));
+        onsiteRepo.save(v);
+
+        FamilyCommunication c = new FamilyCommunication();
+        c.setEvent(e);
+        c.setContactName("郑伟");
+        c.setContactPhone("13700000041");
+        c.setChannel("电话");
+        c.setReached(familyReached);
+        c.setAttitude(familyReached ? "一般" : null);
+        c.setNote(familyNote);
+        c.setOperatorName("李社工");
+        c.setCommunicatedAt(at.plusMinutes(8));
+        commRepo.save(c);
     }
 }

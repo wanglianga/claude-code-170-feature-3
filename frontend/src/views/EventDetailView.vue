@@ -111,6 +111,31 @@
               </el-descriptions-item>
               <el-descriptions-item label="到场时间">{{ fmt(v.arrivedAt) }}（{{ v.visitorName }}）</el-descriptions-item>
               <el-descriptions-item label="老人状态" :span="2">{{ v.elderStatus }}</el-descriptions-item>
+              <el-descriptions-item v-if="v.helpReason" label="求助原因" :span="2">
+                <el-tag v-for="r in (v.helpReason||'').split(',').filter(Boolean)" :key="r"
+                        size="small" type="warning" effect="plain" style="margin:1px">{{ r }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="到场结果" :span="2">
+                <el-tag size="small" type="success">{{ ARRIVE_RESULT_LABEL[v.arriveResult] || v.arriveResult || '—' }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="孤独焦虑" :span="2">
+                <el-tag size="small" :type="v.lonelyAnxious ? 'danger' : 'info'">
+                  {{ v.lonelyAnxious ? '存在孤独焦虑' : '未发现' }}
+                </el-tag>
+                <span v-if="v.anxietyNote" class="muted" style="margin-left:6px">{{ v.anxietyNote }}</span>
+              </el-descriptions-item>
+              <el-descriptions-item label="药物管理" :span="2">
+                <el-tag size="small" :type="v.medicationChaos ? 'danger' : 'info'">
+                  {{ v.medicationChaos ? '药物管理混乱' : '用药正常' }}
+                </el-tag>
+                <span v-if="v.medicationNote" class="muted" style="margin-left:6px">{{ v.medicationNote }}</span>
+              </el-descriptions-item>
+              <el-descriptions-item label="家属参与" :span="2">
+                <el-tag size="small" :type="v.familyInvolved ? 'success' : 'info'">
+                  {{ v.familyInvolved ? '家属参与处置' : '家属未参与' }}
+                </el-tag>
+                <span v-if="v.familyInvolvementNote" class="muted" style="margin-left:6px">{{ v.familyInvolvementNote }}</span>
+              </el-descriptions-item>
               <el-descriptions-item label="联系家属">
                 <el-tag size="small" :type="v.familyContacted ? 'success' : 'info'">
                   {{ v.familyContacted ? '已联系' : '未联系' }}
@@ -365,8 +390,34 @@
             <el-option v-for="s in ELDER_STATUS_OPTIONS" :key="s" :label="s" :value="s" />
           </el-select>
         </el-form-item>
+        <el-form-item label="求助原因">
+          <el-checkbox-group v-model="onsite.reasons">
+            <el-checkbox v-for="r in HELP_REASON_OPTIONS" :key="r" :value="r">{{ r }}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+        <el-form-item label="到场结果">
+          <el-select v-model="onsite.arriveResult" style="width:100%" clearable placeholder="选择本次到场处置结果">
+            <el-option v-for="(v, k) in ARRIVE_RESULT_LABEL" :key="k" :label="v" :value="k" />
+          </el-select>
+        </el-form-item>
         <el-row>
+          <el-col :span="12"><el-form-item label="孤独焦虑"><el-switch v-model="onsite.lonelyAnxious" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="药物混乱"><el-switch v-model="onsite.medicationChaos" /></el-form-item></el-col>
+        </el-row>
+        <el-form-item v-if="onsite.lonelyAnxious" label="焦虑表现">
+          <el-input v-model="onsite.anxietyNote" placeholder="如：反复按键求陪伴、夜间恐惧、情绪低落、睡眠差" />
+        </el-form-item>
+        <el-form-item v-if="onsite.medicationChaos" label="用药情况">
+          <el-input v-model="onsite.medicationNote" placeholder="如：漏服降压药、早晚药混放、发现过期药" />
+        </el-form-item>
+        <el-row>
+          <el-col :span="12"><el-form-item label="家属参与"><el-switch v-model="onsite.familyInvolved" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="联系家属"><el-switch v-model="onsite.familyContacted" /></el-form-item></el-col>
+        </el-row>
+        <el-form-item v-if="onsite.familyInvolved" label="家属参与情况">
+          <el-input v-model="onsite.familyInvolvementNote" placeholder="如：儿子电话共同安抚/到场陪同送医" />
+        </el-form-item>
+        <el-row>
           <el-col :span="12"><el-form-item label="需要送医"><el-switch v-model="onsite.hospitalNeeded" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="拒绝就医"><el-switch v-model="onsite.refuseMedical" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="临时照护"><el-switch v-model="onsite.temporaryCareNeeded" /></el-form-item></el-col>
@@ -526,7 +577,8 @@ import api from '../api'
 import {
   SOURCE_LABEL, TRIAGE_LABEL, SEVERITY_LABEL, SEVERITY_TAG, TARGET_LABEL,
   SERVICE_LABEL, FOLLOW_RESULT_LABEL, RISK_LABEL, RISK_TAG, STATUS_LABEL, STATUS_TAG,
-  RISK_LEVEL_LABEL, RISK_LEVEL_TAG, ENTRY_METHODS, ELDER_STATUS_OPTIONS
+  RISK_LEVEL_LABEL, RISK_LEVEL_TAG, ENTRY_METHODS, ELDER_STATUS_OPTIONS,
+  HELP_REASON_OPTIONS, ARRIVE_RESULT_LABEL
 } from '../api/dict'
 
 const route = useRoute()
@@ -602,6 +654,10 @@ function openOnsite() {
   Object.assign(onsite, {
     entryMethod: d.value.elder?.doorAccessInfo ? '智能锁授权' : '钥匙开门',
     entered: true, photoUrls: '', elderStatus: '清醒正常',
+    reasons: [], arriveResult: null,
+    lonelyAnxious: false, anxietyNote: '',
+    medicationChaos: false, medicationNote: '',
+    familyInvolved: false, familyInvolvementNote: '',
     familyContacted: false, hospitalNeeded: false, refuseMedical: false,
     temporaryCareNeeded: false, suggestions: [], safetyHazards: '', note: ''
   })
@@ -617,6 +673,7 @@ async function submitOnsite() {
   if (!onsite.elderStatus) { ElMessage.warning('请填写老人状态'); return }
   await api.post(`/events/${route.params.id}/onsite`, {
     ...onsite,
+    helpReason: onsite.reasons.join(','),
     followServiceSuggestions: onsite.suggestions.join(',')
   })
   ElMessage.success('上门记录已提交')

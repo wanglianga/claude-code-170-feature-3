@@ -98,3 +98,45 @@ export const RISK_LEVEL_TAG = {
 export const ENTRY_METHODS = ['钥匙开门', '门禁密码', '智能锁授权', '邻居协助开门', '家属到场开门', '破锁入户', '未能入户']
 
 export const ELDER_STATUS_OPTIONS = ['清醒正常', '身体不适', '已跌倒', '意识不清', '情绪激动', '未见到老人']
+
+/* ---------------- 频繁求助 / 长期照护 ---------------- */
+
+export const HELP_REASON_OPTIONS = ['孤独焦虑', '身体不适', '跌倒', '用药问题', '生活协助', '设备误触', '夜间恐惧', '其他']
+
+export const ARRIVE_RESULT_LABEL = {
+  SCENE_RESOLVED: '现场解决',
+  CALMED: '安抚后平稳',
+  TO_HOSPITAL: '送医处置',
+  TEMP_CARE: '安排临时照护',
+  FORWARD_SERVICE: '转长期服务',
+  NO_ENTRY: '未能入户'
+}
+
+export const PLAN_SERVICE_LABEL = {
+  REGULAR_VISIT: '定期探访',
+  PSYCH_COMPANION: '心理陪伴',
+  MEAL_SERVICE: '助餐',
+  FAMILY_DOCTOR: '家庭医生随访'
+}
+
+export const PLAN_STATUS_LABEL = {
+  DRAFT: '待生效',
+  ACTIVE: '生效观察中',
+  ADJUSTED: '已调整',
+  ENDED: '已结束'
+}
+
+export const PLAN_STATUS_TAG = {
+  DRAFT: 'warning',
+  ACTIVE: 'success',
+  ADJUSTED: 'info',
+  ENDED: 'info'
+}
+
+export const ITEM_STATUS_LABEL = { ACTIVE: '执行中', PAUSED: '暂停', DONE: '已结束' }
+
+export const MED_STATUS_LABEL = { PENDING: '待确认', CONFIRMED: '已确认服药', MISSED: '漏服' }
+export const MED_STATUS_TAG = { PENDING: 'warning', CONFIRMED: 'success', MISSED: 'danger' }
+
+export const CONFERENCE_STATUS_LABEL = { SCHEDULED: '待召开', HELD: '已召开' }
+export const CONFERENCE_STATUS_TAG = { SCHEDULED: 'warning', HELD: 'success' }

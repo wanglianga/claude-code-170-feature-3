@@ -104,6 +104,17 @@ public class Elder {
     /** 建议心理陪伴 */
     private boolean suggestPsychCompanion;
 
+    /* ---- 长期照护方案与个案会商写回 ---- */
+
+    /** 最近一次个案会商时间 */
+    private LocalDate lastCaseConferenceDate;
+    /** 个案会商结论与后续行动（养老顾问、社区医生、家属协商结论写回档案） */
+    @Column(length = 3000)
+    private String caseConferenceNote;
+    /** 长期照护跟踪备注（方案/会商形成的持续观察结论） */
+    @Column(length = 3000)
+    private String longTermCareNote;
+
     @Column(length = 2000)
     private String remark;
 

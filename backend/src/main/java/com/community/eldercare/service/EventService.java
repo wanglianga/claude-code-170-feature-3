@@ -214,6 +214,14 @@ public class EventService {
         v.setEntered(req.isEntered());
         v.setPhotoUrls(req.getPhotoUrls());
         v.setElderStatus(req.getElderStatus());
+        v.setHelpReason(req.getHelpReason());
+        v.setArriveResult(req.getArriveResult());
+        v.setLonelyAnxious(req.isLonelyAnxious());
+        v.setAnxietyNote(req.getAnxietyNote());
+        v.setMedicationChaos(req.isMedicationChaos());
+        v.setMedicationNote(req.getMedicationNote());
+        v.setFamilyInvolved(req.isFamilyInvolved());
+        v.setFamilyInvolvementNote(req.getFamilyInvolvementNote());
         v.setFamilyContacted(req.isFamilyContacted());
         v.setHospitalNeeded(req.isHospitalNeeded());
         v.setRefuseMedical(req.isRefuseMedical());
@@ -248,6 +256,11 @@ public class EventService {
 
         addLog(e, "ONSITE", "上门核实：入户方式 " + req.getEntryMethod()
                 + "，老人状态 " + req.getElderStatus()
+                + (req.getArriveResult() != null ? "，到场结果 " + arriveResultLabel(req.getArriveResult()) : "")
+                + (req.getHelpReason() != null && !req.getHelpReason().isBlank() ? "，求助原因 " + req.getHelpReason() : "")
+                + (req.isLonelyAnxious() ? "，存在孤独焦虑" : "")
+                + (req.isMedicationChaos() ? "，药物管理混乱" : "")
+                + (req.isFamilyInvolved() ? "，家属参与处置" : "")
                 + (req.isHospitalNeeded() ? "，需送医" : "")
                 + (req.isRefuseMedical() ? "，老人拒绝就医" : "")
                 + (req.isTemporaryCareNeeded() ? "，需临时照护" : "")
@@ -705,6 +718,18 @@ public class EventService {
             case "STABLE" -> "平稳";
             case "WORSENED" -> "恶化";
             case "NO_ANSWER" -> "未联系上";
+            default -> s;
+        };
+    }
+
+    public static String arriveResultLabel(String s) {
+        return switch (s) {
+            case "SCENE_RESOLVED" -> "现场解决";
+            case "CALMED" -> "安抚后平稳";
+            case "TO_HOSPITAL" -> "送医处置";
+            case "TEMP_CARE" -> "安排临时照护";
+            case "FORWARD_SERVICE" -> "转长期服务";
+            case "NO_ENTRY" -> "未能入户";
             default -> s;
         };
     }
